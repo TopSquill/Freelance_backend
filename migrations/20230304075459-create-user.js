@@ -15,7 +15,7 @@ module.exports = {
       updated_at timestamp default current_timestamp,
       password VARCHAR(255),
       mobile_otp VARCHAR(20),
-      email_otp VARCHAR(20),
+      email_otp VARCHAR(255),
       country VARCHAR(255),
       USER_TYPE user_type NOT NULL
     )`);

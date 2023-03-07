@@ -9,10 +9,10 @@ const cors = require('cors')
 const routes = require('./app/routes');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 
 const corsOptions = {
-  origin: "http://localhost:8081"
+  origin: "http://localhost:3000"
 };
 
 app.use(cors(corsOptions))
@@ -49,7 +49,7 @@ app.use(function (err, req, res, next) {
 const db = require("./app/models");
 
 // force: true drops existing tables and re-sync database
-db.sequelize.sync({ force: process.env.NODE_ENV == 'development' })
+db.sequelize.sync()
   .then(() => {
     console.log("Synced db.");
   })

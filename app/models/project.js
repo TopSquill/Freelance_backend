@@ -2,6 +2,9 @@
 const {
   Model
 } = require('sequelize');
+
+const db = require('.');
+
 module.exports = (sequelize, DataTypes) => {
   class Project extends Model {
     /**
@@ -10,8 +13,7 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
-
+      this.belongsTo(models['User'])
     }
   }
   Project.init({
@@ -19,13 +21,15 @@ module.exports = (sequelize, DataTypes) => {
     description: DataTypes.TEXT,
     budget: DataTypes.FLOAT,
     budgetType: DataTypes.ENUM(['FIXED', 'HOURLY', 'MONTHLY']),
-    attachments: DataTypes.ARRAY,
-    userId: DataTypes.BIGINT
+    attachments: DataTypes.ARRAY(DataTypes.STRING),
+    postedByUserId: DataTypes.BIGINT
   }, {
     sequelize,
+    name: 'Project',
     modelName: 'Project',
+    timestamps: true
   });
 
-  Project.hasOne('users');
+
   return Project;
 };

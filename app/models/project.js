@@ -3,7 +3,6 @@ const {
   Model
 } = require('sequelize');
 
-const db = require('.');
 
 module.exports = (sequelize, DataTypes) => {
   class Project extends Model {
@@ -14,22 +13,32 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       this.belongsTo(models['User'])
+      Project.hasMany(models['ProjectCategory']);
+      Project.hasMany(models['ProjectTag'])
     }
   }
   Project.init({
+    id: {
+      type: DataTypes.BIGINT,
+      primaryKey: true
+    },
     headline: DataTypes.STRING,
     description: DataTypes.TEXT,
     budget: DataTypes.FLOAT,
     budgetType: DataTypes.ENUM(['FIXED', 'HOURLY', 'MONTHLY']),
     attachments: DataTypes.ARRAY(DataTypes.STRING),
-    postedByUserId: DataTypes.BIGINT
+    postedByUserId: DataTypes.BIGINT,
+    duration: {
+      allowNull: true,
+      type: DataTypes.ENUM(['1_MONTH+', '2_MONTHS+', '3_MONTHS+', '6_MONTHS+'])
+    },
   }, {
     sequelize,
     name: 'Project',
     modelName: 'Project',
+    underscored: true,
     timestamps: true
   });
-
 
   return Project;
 };

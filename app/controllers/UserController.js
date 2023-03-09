@@ -55,6 +55,13 @@ const UserController = {
       }
     }
   },
+  verifyPhone: async (req, res) => {
+    try {
+      return res.status(200).send()
+    } catch(err) {
+      return res.status(400).json({ message: err.message });
+    }
+  },
   getUser: async (req, res) => {
     const { userId } = req.params;
 
@@ -80,6 +87,9 @@ const UserController = {
     } catch (error) {
       res.status(500).json({ message: error.message() });
     }
+  },
+  login: async (req, res) => {
+
   },
   getAllProjects: async (req, res) => {
     const { userId } = req.query;

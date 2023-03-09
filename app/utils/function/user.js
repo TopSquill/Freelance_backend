@@ -53,3 +53,9 @@ function parseEmailToken(emailToken) {
 }
 
 exports.parseEmailToken = parseEmailToken;
+
+function getUserId() {
+  return 2;
+}
+
+exports.getUserId = getUserId;

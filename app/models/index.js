@@ -19,17 +19,24 @@ if (config.use_env_variable) {
 
 const User = require('./user')(sequelize, Sequelize.DataTypes);
 db[User.name] = User;
-exports.User = User;
 
 const Project = require('./project')(sequelize, Sequelize.DataTypes);
 db[Project.name] = Project;
-exports.Project = Project;
 
-Object.keys(db).forEach(modelName => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-  }
-});
+const Tag = require('./tag')(sequelize, Sequelize.DataTypes);
+db[Tag.name] = Tag;
+
+const Category = require('./category')(sequelize, Sequelize.DataTypes);
+db[Category.name] = Category;
+
+const ProjectCategory = require('./ProjectCategory')(sequelize, Sequelize.DataTypes);
+db[ProjectCategory.name] = ProjectCategory;
+
+const ProjectTag = require('./ProjectTag')(sequelize, Sequelize.DataTypes);
+db[ProjectTag.name] = ProjectTag;
+
+module.exports = { User, Project, Tag, Category, ProjectCategory, ProjectTag };
+
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;

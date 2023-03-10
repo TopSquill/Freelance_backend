@@ -3,10 +3,11 @@ const nodemailer = require('nodemailer');
 require('dotenv').config()
 
 const nodemailerConfig = {
-  service: 'gmail',
+  host: 'smtp.ethereal.email',
+  port: 587,
   auth: {
-    user: process.env.EMAIL || 'your_email@gmail.com',
-    pass: process.env.EMAIL_PASSWORD || 'your_email_password'
+    user: process.env.EMAIL || 'leonard.gerlach89@ethereal.email',
+    pass: process.env.EMAIL_PASSWORD || 'WtwazQqtePF7uMWnta'
   }
 }
 

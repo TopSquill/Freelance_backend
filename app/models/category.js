@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      this.hasMany(models['ProjectCategory'])
+      console.log('--------------------------', require('.').Project)
+      this.belongsToMany(require('.')['Project'], { through: require('.')['ProjectCategory'] })
     }
   }
   Category.init({

@@ -35,8 +35,16 @@ db[ProjectCategory.name] = ProjectCategory;
 const ProjectTag = require('./ProjectTag')(sequelize, Sequelize.DataTypes);
 db[ProjectTag.name] = ProjectTag;
 
-module.exports = { User, Project, Tag, Category, ProjectCategory, ProjectTag };
+const FreelancerProfile = require('./FreelancerProfile')(sequelize, Sequelize.DataTypes);
+db[FreelancerProfile.name] = ProjectTag;
 
+module.exports = { User, Project, Tag, Category, ProjectCategory, ProjectTag, FreelancerProfile };
+
+// Object.keys(db).forEach(modelName => {
+//   if (db[modelName].associate) {
+//     db[modelName].associate(db);
+//   }
+// });
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;

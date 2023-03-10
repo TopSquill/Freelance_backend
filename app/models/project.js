@@ -12,9 +12,9 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      this.belongsTo(models['User'])
-      Project.hasMany(models['ProjectCategory']);
-      Project.hasMany(models['ProjectTag'])
+      Project.belongsTo(models['User'])
+      // Project.hasMany(models['ProjectCategory']);
+      // Project.hasMany(models['Tag'], { through: models['ProjectTag'] });
     }
   }
   Project.init({
@@ -27,7 +27,14 @@ module.exports = (sequelize, DataTypes) => {
     budget: DataTypes.FLOAT,
     budgetType: DataTypes.ENUM(['FIXED', 'HOURLY', 'MONTHLY']),
     attachments: DataTypes.ARRAY(DataTypes.STRING),
-    postedByUserId: DataTypes.BIGINT,
+    postedByUserId: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      references: {
+        model: 'users',
+        key: 'posted_by_user_id'
+      }
+    },
     duration: {
       allowNull: true,
       type: DataTypes.ENUM(['1_MONTH+', '2_MONTHS+', '3_MONTHS+', '6_MONTHS+'])

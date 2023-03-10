@@ -2,9 +2,8 @@
 const {
   Model
 } = require('sequelize');
-
 module.exports = (sequelize, DataTypes) => {
-  class tag extends Model {
+  class FreelancerProfile extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -12,24 +11,25 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      this.belongsTo(models['User'])
     }
   }
-  tag.init({
-    title: DataTypes.STRING,
-    category_id: {
+  FreelancerProfile.init({
+    userId: {
       type: DataTypes.BIGINT,
       allowNull: false,
       references: {
-        model: 'category',
+        model: 'users',
         key: 'id'
       }
-    }
+    },
+    projects: DataTypes.ARRAY(DataTypes.JSON),
+    links: DataTypes.ARRAY(DataTypes.STRING)
   }, {
     sequelize,
-    modelName: 'tag',
-    name: 'Tag',
+    modelName: 'FreelancerProfile',
+    name: 'FreelancerProfile',
     underscored: true,
-    timestamps: false
   });
-  return tag;
+  return FreelancerProfile;
 };

@@ -15,10 +15,11 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      this.hasMany(models.Project, {
+      User.hasMany(models['Project'], {
         as: "projects",
         foreignKey: "posted_by_user_id",
       });
+      User.hasOne(models['FreelancerProfile'])
     }
 
     async checkPassword(password) {
@@ -28,8 +29,6 @@ module.exports = (sequelize, DataTypes) => {
     static async verifyUserEmail(userId, userToken) {
       const user = await User.findByPk(userId);
 
-      if (user.isEmailVerified) return true;
-
       if (checkIfEmailOtpValid(user.emailOtp, userToken)) {
         await user.update({ isEmailVerified: true });
         return true;
@@ -38,6 +37,20 @@ module.exports = (sequelize, DataTypes) => {
       return false;
     }
 
+    async verifyUserByMail() {
+      // TODO: later will remove userID
+      const emailOtp = generateOTP(this.dataValues.id)
+
+      // User is not verified yet
+      try {
+        sendVerificationMail(this.dataValues.email, emailOtp);
+      } catch(err) {
+        console.log('error: '+err);
+        throw new Error(err.message)
+      } finally {
+        await this.update({ emailOtp: emailOtp+'_'+getTimestamp() })
+      }
+    }
 
   }
 
@@ -45,6 +58,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       email: {
         type: DataTypes.STRING,
+        allowNull: false,
         unique: true,
         validate: {
           notEmpty: true,
@@ -104,11 +118,19 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "User",
+      name: 'User',
       timestamps: true,
       underscored: true,
       defaultScope: {
         attributes: {
-          exclude: ['password'] // scope will not be applicable for create
+          exclude: ['password', 'emailOtp', 'mobileOtp', 'createdAt', 'updatedAt'] // scope will not be applicable for create
+        }
+      },
+      scopes: {
+        includePassword: {
+          attributes: {
+            exclude: ['emailOtp', 'mobileOtp', 'createdAt', 'updatedAt']
+          }
         }
       }
     },
@@ -121,11 +143,10 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   User.afterCreate(async (user, options) => {
-    await verifyUserByMail(user);
+    await user.verifyUserByMail();
   });
 
   User.beforeUpdate(async (user, options) => {
-    console.log("asdasdasd");
     if (user.changed("password")) {
       user.password = encrypt(user.password);
     }
@@ -145,20 +166,6 @@ module.exports = (sequelize, DataTypes) => {
     // const projects = await user.getProject();
     return user;
   };
-
-  async function verifyUserByMail(user) {
-    // TODO: later will remove userID
-    const emailOtp = generateOTP(user.dataValues.id)
-
-    // User is not verified yet
-    try {
-    sendVerificationMail(user.dataValues.email, emailOtp);
-    } catch(err) {
-    console.log('error: '+err);
-    } finally {
-    await user.update({ emailOtp: emailOtp+'_'+getTimestamp() })
-    }
-  }
 
   return User;
 };

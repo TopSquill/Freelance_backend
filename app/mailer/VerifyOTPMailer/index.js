@@ -24,7 +24,7 @@ function sendVerificationMail(recipientMail, emailOtp) {
     subject: `${Common.siteTitle} | OTP Verification`,
     html: compiledTemplate
   };
-
+  console.log('mailOptions', mailOptions);
   // send the email
   GLOBAL_TRANSPORTER.sendMail(mailOptions, function(error, info){
     if (error) {

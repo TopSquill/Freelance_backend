@@ -3,6 +3,9 @@ const {
   Model
 } = require('sequelize');
 
+const durationTypes = ['1_MONTH+', '2_MONTHS+', '3_MONTHS+', '6_MONTHS+']
+
+const budgetTypes = ['FIXED', 'HOURLY', 'MONTHLY'];
 
 module.exports = (sequelize, DataTypes) => {
   class Project extends Model {
@@ -18,15 +21,27 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Project.init({
-    id: {
-      type: DataTypes.BIGINT,
-      primaryKey: true
+    headline: {
+      type: DataTypes.STRING,
+      allowNull: false
     },
-    headline: DataTypes.STRING,
     description: DataTypes.TEXT,
     budget: DataTypes.FLOAT,
-    budgetType: DataTypes.ENUM(['FIXED', 'HOURLY', 'MONTHLY']),
-    attachments: DataTypes.ARRAY(DataTypes.STRING),
+    budgetType: {
+      type: DataTypes.ENUM(budgetTypes),
+      validate: {
+        isIn: {
+          msg: `Budget type must one of these (${Object.values(budgetTypes).join(
+            ", ",
+          )})`,
+          args: [budgetTypes]
+        }
+      }
+    },
+    attachments: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: []
+    },
     postedByUserId: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -37,7 +52,15 @@ module.exports = (sequelize, DataTypes) => {
     },
     duration: {
       allowNull: true,
-      type: DataTypes.ENUM(['1_MONTH+', '2_MONTHS+', '3_MONTHS+', '6_MONTHS+'])
+      type: DataTypes.ENUM(durationTypes),
+      validate: {
+        isIn: {
+          msg: `Duration type must one of these (${Object.values(durationTypes).join(
+            ", ",
+          )})`,
+          args: [durationTypes]
+        }
+      }
     },
   }, {
     sequelize,

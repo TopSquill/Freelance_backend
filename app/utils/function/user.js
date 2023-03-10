@@ -54,8 +54,11 @@ function parseEmailToken(emailToken) {
 
 exports.parseEmailToken = parseEmailToken;
 
-function getUserId() {
-  return 2;
+const jwt = require('jsonwebtoken');
+
+function getUser(req) {
+  const { user } = jwt.decode(req.headers[process.env.JWT_TOKEN_HEADER])
+  return user;
 }
 
-exports.getUserId = getUserId;
+exports.getUser = getUser;

@@ -27,7 +27,8 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static async verifyUserEmail(userId, userToken) {
-      const user = await User.findByPk(userId);
+      const user = await User.scope('otpVerify').findByPk(userId);
+      if (user.isEmailVerified) throw new Error('Email already Verified')
 
       if (checkIfEmailOtpValid(user.emailOtp, userToken)) {
         await user.update({ isEmailVerified: true });
@@ -130,6 +131,11 @@ module.exports = (sequelize, DataTypes) => {
         includePassword: {
           attributes: {
             exclude: ['emailOtp', 'mobileOtp', 'createdAt', 'updatedAt']
+          }
+        },
+        otpVerify: {
+          attributes: {
+            exclude: ['password', 'createdAt', 'updatedAt']
           }
         }
       }

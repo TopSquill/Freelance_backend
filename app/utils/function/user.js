@@ -38,7 +38,7 @@ function checkIfEmailOtpValid(actualUserToken, currentToken) {
   const actualToken = userTokenSplit[0]
   const timestamp = userTokenSplit[1];
 
-  if (timestamp > Number(new Date()) || actualToken === currentToken) {
+  if (timestamp > Number(new Date()) && actualToken === currentToken) {
     return true;
   }
 
@@ -49,6 +49,7 @@ exports.checkIfEmailOtpValid = checkIfEmailOtpValid;
 
 function parseEmailToken(emailToken) {
   const emailTokenSplit = emailToken.split('.');
+  console.log('emailTokensplit-------------------1', emailTokenSplit);
   return { userId: emailTokenSplit[1], verifyToken: emailToken }
 }
 

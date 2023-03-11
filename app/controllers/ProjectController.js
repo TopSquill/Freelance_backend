@@ -20,7 +20,7 @@ const ProjectController = {
       res.status(400).send({ message: err.message });
     }
   },
-  updateProject: (req, res) => {
+  updateProject: async (req, res) => {
     const { projectId } = req.params;
     const { headline, duration, description, attachments, budget, budgetType } = req.body;
     const user = getUser(req);
@@ -29,7 +29,7 @@ const ProjectController = {
     }
 
     try {
-      const project = Project.update({ headline, description, duration, attachments, budget, budgetType }, { where: { id: projectId }});
+      const project = awaitProject.update({ headline, description, duration, attachments, budget, budgetType }, { where: { id: projectId }, returning: true });
       res.status(200).send({ project })
     } catch (err) {
       console.log('Update error', err.message);

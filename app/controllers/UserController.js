@@ -105,12 +105,15 @@ const UserController = {
   },
   login: async (req, res) => {
     const { email, phone, password } = req.body;
-    console.log('headers', req.headers)
     let user;
 
     try {
       user = await User.scope('includePassword').findOne({
         where: { email },
+        include: {
+          model: db.Project,
+          as: "projects",
+        }
       });
 
       if (!user)

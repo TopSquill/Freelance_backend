@@ -12,21 +12,23 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      this.belongsTo(models['Category'], { as: 'associatedCategory', foreignKey: 'category_id' })
+      this.belongsToMany(models.Project, { through: models['ProjectTag'], as: 'TaggedProject' });
     }
   }
   tag.init({
     title: DataTypes.STRING,
-    category_id: {
+    categoryId: {
       type: DataTypes.BIGINT,
       allowNull: false,
       references: {
-        model: 'category',
+        model: 'categories',
         key: 'id'
       }
     }
   }, {
     sequelize,
-    modelName: 'tag',
+    modelName: 'Tag',
     name: 'Tag',
     underscored: true,
     timestamps: false

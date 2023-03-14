@@ -13,7 +13,7 @@ let sequelize;
 if (config.use_env_variable) {
   sequelize = new Sequelize(process.env[config.use_env_variable], config);
 } else {
-  sequelize = new Sequelize(config.database, config.username, config.password, config);
+  sequelize = new Sequelize(config.database, config.username, config.password, { ...config, underscored: true });
 }
 
 
@@ -36,15 +36,16 @@ const ProjectTag = require('./ProjectTag')(sequelize, Sequelize.DataTypes);
 db[ProjectTag.name] = ProjectTag;
 
 const FreelancerProfile = require('./FreelancerProfile')(sequelize, Sequelize.DataTypes);
-db[FreelancerProfile.name] = ProjectTag;
+db[FreelancerProfile.name] = FreelancerProfile;
 
 module.exports = { User, Project, Tag, Category, ProjectCategory, ProjectTag, FreelancerProfile };
 
-// Object.keys(db).forEach(modelName => {
-//   if (db[modelName].associate) {
-//     db[modelName].associate(db);
-//   }
-// });
+Object.keys(db).forEach(modelName => {
+  if (db[modelName].associate) {
+    // console.log()
+    db[modelName].associate(db);
+  }
+});
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;

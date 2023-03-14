@@ -11,24 +11,35 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      ProjectCategory.belongsTo(models['Project']);
-      ProjectCategory.belongsTo(models['Category']);
+      ProjectCategory.belongsTo(models['Project'], { foreignKey: 'project_id', as: 'project' });
+      ProjectCategory.belongsTo(models['Category'], { foreignKey: 'category_id', as: 'category' });
     }
   }
   ProjectCategory.init({
     projectId: {
       type: DataTypes.BIGINT,
-      allowNull: false
+      allowNull: false,
+      field: 'project_id',
+      references: {
+        model: 'Project',
+        key: 'id'
+      }
     },
     categoryId: {
       type: DataTypes.BIGINT,
-      allowNull: false
+      allowNull: false,
+      field: 'category_id',
+      references: {
+        model: 'Category',
+        key: 'id'
+      }
     }
   }, {
     sequelize,
     modelName: 'ProjectCategory',
     underscored: true,
-    name: 'ProjectCategory'
+    name: 'ProjectCategory',
+    timestamps: false
   });
 
   return ProjectCategory;

@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      this.belongsTo(models['User'])
+      this.belongsTo(models['User'], { foreignKey: 'user_id', as: 'userAccount' })
     }
   }
   FreelancerProfile.init({
@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BIGINT,
       allowNull: false,
       references: {
-        model: 'users',
+        model: 'User',
         key: 'id'
       }
     },

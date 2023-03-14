@@ -12,6 +12,7 @@ module.exports = {
       projectId: {
         type: Sequelize.BIGINT,
         allowNull: false,
+        field: 'project_id',
         references: {
           model: 'projects',
           key: 'id'
@@ -20,6 +21,7 @@ module.exports = {
       categoryId: {
         type: Sequelize.BIGINT,
         allowNull: false,
+        field: 'category_id',
         references: {
           model: 'categories',
           key: 'id'

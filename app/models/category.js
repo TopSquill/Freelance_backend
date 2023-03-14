@@ -11,8 +11,11 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      console.log('--------------------------', require('.').Project)
-      this.belongsToMany(require('.')['Project'], { through: require('.')['ProjectCategory'] })
+      this.belongsToMany(models['Project'], {
+        through: models['ProjectCategory'],
+        as: 'Project'
+      })
+      this.hasMany(models['Tag'], { as: 'tags', foreignKey: 'category_id', onDelete: 'CASCADE' })
     }
   }
   Category.init({
@@ -22,9 +25,10 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     sequelize,
-    modelName: 'category',
+    modelName: 'Category',
     name: 'Category',
-    timestamps: false
+    timestamps: false,
+    underscored: true,
   });
 
   return Category;

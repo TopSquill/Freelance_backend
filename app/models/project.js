@@ -15,9 +15,9 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Project.belongsTo(models['User'])
-      // Project.hasMany(models['ProjectCategory']);
-      // Project.hasMany(models['Tag'], { through: models['ProjectTag'] });
+      Project.belongsTo(models['User'], { as: 'postedBy', foreignKey: 'posted_by_user_id' })
+      Project.belongsToMany(models['Category'], { through: models['ProjectCategory'], as: 'category' });
+      Project.belongsToMany(models['Tag'], { through: models['ProjectTag'], as: 'keyword' });
     }
   }
   Project.init({
@@ -38,6 +38,12 @@ module.exports = (sequelize, DataTypes) => {
         }
       }
     },
+    budgetCurrency: {
+      type: DataTypes.STRING,
+      validate: {
+        len: 3
+      }
+    },
     attachments: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       defaultValue: []
@@ -47,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       references: {
         model: 'users',
-        key: 'posted_by_user_id'
+        key: 'id'
       }
     },
     duration: {
@@ -69,6 +75,10 @@ module.exports = (sequelize, DataTypes) => {
     underscored: true,
     timestamps: true
   });
+
+  Project.beforeCreate(async (user, options) => {
+    user.dataValues.budgetCurrency = user.dataValues.budgetCurrency.toUpperCase()
+  })
 
   return Project;
 };

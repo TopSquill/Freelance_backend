@@ -12,8 +12,8 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      ProjectTag.belongsTo(models['Project']);
-      ProjectTag.belongsTo(models['Tag']);
+      ProjectTag.belongsTo(models['Project'], { as: 'Project' });
+      ProjectTag.belongsTo(models['Tag'], { as: 'Tag' });
     }
   }
   ProjectTag.init({

@@ -5,7 +5,7 @@ const { options } = require("../routes");
 
 const UserTypes = require("../utils/constants/UserTypes");
 const { encrypt, generateOTP, getTimestamp, checkIfEmailOtpValid } = require("../utils/function/user");
-const Project = require("./project");
+const { Project } = require(".");
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
@@ -15,11 +15,12 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      User.hasMany(models['Project'], {
+      console.log('models --------------', models);
+      User.hasMany(models.Project, {
         as: "projects",
         foreignKey: "posted_by_user_id",
       });
-      User.hasOne(models['FreelancerProfile'])
+      User.hasOne(models['FreelancerProfile'], { foreignKey: 'user_id', as: 'FreelancePortfolio'})
     }
 
     async checkPassword(password) {

@@ -24,6 +24,18 @@ class TagController {
       return res.status(400, { message: err.message });
     }
   }
+
+  async delete(req, res) {
+    const { tagId } = req.params;
+
+    try {
+      await Tag.destroy({ where: { id: tagId }});
+
+      return res.status(201).send({ success: true });
+    } catch(err) {
+      return res.status(400, { message: err.message });
+    }
+  }
 }
 
 module.exports = new TagController();

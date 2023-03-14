@@ -77,7 +77,7 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Project.beforeCreate(async (user, options) => {
-    user.dataValues.budgetCurrency = user.dataValues.budgetCurrency.toUpperCase()
+    user.dataValues.budgetCurrency = user.dataValues.budgetCurrency?.toUpperCase?.()
   })
 
   return Project;

@@ -1,31 +1,31 @@
 const { Project, ProjectCategory, ProjectTag } = require("../models");
 const UserTypes = require("../utils/constants/UserTypes");
+const { UnauthorizedError } = require("../utils/errors/users");
 const { showError } = require("../utils/function/common");
 const { getUserId, getUser } = require("../utils/function/user");
 
 const ProjectController = {
   createProject: async (req, res) => {
     const { headline, duration, description, attachments, budget, budgetType, budgetCurrency, projectCategoryIds, projectTagIds = [] } = req.body
-    const user = getUser(req);
-
-    // if (user.userType !== UserTypes.CLIENT) {
-    //   return res.status(405).send({ message: 'User type not allowed' })
-    // }
-
     try {
+      const user = getUser(req);
       const newProject = await Project.create({ headline, description, duration, attachments, budget, budgetType, budgetCurrency, postedByUserId: user.id });
 
       await Promise.all([
-        ProjectCategory.bulkCreate(projectCategoryIds.map(categoryId => ({ categoryId, projectId: newProject.id }))),
-        ProjectTag.bulkCreate(projectTagIds.map(tagId => ({ tagId, projectId: newProject.id })))
+        ProjectCategory.bulkCreate(projectCategoryIds?.map(categoryId => ({ categoryId, projectId: newProject.id }))),
+        ProjectTag.bulkCreate(projectTagIds?.map(tagId => ({ tagId, projectId: newProject.id })))
       ]).then((success) => {
         console.log('asdasda--------------', success)
       })
 
-      res.status(201).send({ message: 'created', project: newProject })
+      return res.status(201).send({ message: 'created', project: newProject })
     } catch (err) {
       console.log('Create error', err.message);
-      res.status(400).send({ message: showError(err) });
+      if (err instanceof UnauthorizedError) {
+        return res.status(400).send({ message: showError(err) });
+
+      }
+      return res.status(400).send({ message: showError(err) });
     }
   },
   updateProject: async (req, res) => {

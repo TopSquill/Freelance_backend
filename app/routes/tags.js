@@ -6,6 +6,6 @@ const TagController = require('../controllers/TagController');
 // router.get('/', SessionController.store);
 router.post('/', TagController.create);
 router.put('/:tagId', TagController.update);
-// router.delete('/', SessionController.store);
+router.delete('/:tagId', TagController.delete);
 
 module.exports = router;

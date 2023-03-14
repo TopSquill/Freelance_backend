@@ -5,6 +5,9 @@ const { parseEmailToken } = require("../utils/function/user");
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const db = require("../models");
+const { AlreadyVerifyMailError } = require("../utils/errors/users");
+const { showError } = require("../utils/function/common");
+const { getJWTToken } = require("../utils/function/user");
 
 const UserController = {
   signup: async (req, res) => {
@@ -35,13 +38,12 @@ const UserController = {
       //     .json({ message: "User with this mobile already exists" });
       // }
 
-      const newUser = await User.create({ name, email, password, userType });
+      await User.create({ name, email, password, userType }, { returning: false });
 
-      delete newUser.dataValues.password;
-      return res.status(201).json({ user: newUser });
+      return res.status(201).json({ success: true, message: 'Verification mail has been sent' });
     } catch (error) {
       if (error instanceof Error) {
-        return res.status(400).json({ message: error.message });
+        return res.status(400).json({ message: showError(error) });
       }
     }
   },
@@ -50,10 +52,14 @@ const UserController = {
     const {userId, verifyToken} = parseEmailToken(token);
 
     try {
-      const success = await User.verifyUserEmail(userId, verifyToken);
+      const user = await User.verifyUserEmail(userId, verifyToken);
+      const token = getJWTToken(user);
 
-      return res.status(200).send({ success });
+      return res.status(200).send({ success, token, user });
     } catch(err) {
+      if (err instanceof AlreadyVerifyMailError) {
+        return res.status(405).json({ message: err.message })
+      }
       if (err instanceof Error) {
         return res.status(400).json({ message: err.message });
       }
@@ -88,13 +94,14 @@ const UserController = {
     return User.findOne({ where: { email }}).then(user => {
 
       if (!user) {
-        return false;
+        return res.status(404).send({ message: 'User not found'});
       }
+
       if (user.isEmailVerified) throw new Error('Email already verified');
 
       return user.verifyUserByMail();
     }).then(success => {
-      if (!success === false) {
+      if (!success) {
         return res.status(404).send({ message: 'User does not exist' });
       }
 
@@ -109,11 +116,7 @@ const UserController = {
 
     try {
       user = await User.scope('includePassword').findOne({
-        where: { email },
-        include: {
-          model: db.Project,
-          as: "projects",
-        }
+        where: { email }
       });
 
       if (!user)
@@ -126,9 +129,8 @@ const UserController = {
       if (!success) return res.status(400).send({ message: 'Incorrect password' })
 
       if (user.isEmailVerified) {
-        console.log('user', user);
         delete user.dataValues['password']
-        const token = jwt.sign({ user }, process.env.JWT_SECRET_KEY, { expiresIn: '1d' })
+        const token = getJWTToken(user)
 
         return res.status(200).send({ token, user })
       }

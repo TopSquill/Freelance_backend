@@ -12,15 +12,20 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      this.belongsTo(models['Category'], { as: 'associatedCategory', foreignKey: 'category_id' })
+      this.belongsTo(models['Category'], { as: 'category' })
       this.belongsToMany(models.Project, { through: models['ProjectTag'], as: 'TaggedProject' });
     }
   }
   tag.init({
-    title: DataTypes.STRING,
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true
+      }
+    },
     categoryId: {
       type: DataTypes.BIGINT,
-      allowNull: false,
       references: {
         model: 'categories',
         key: 'id'
@@ -31,7 +36,10 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'Tag',
     name: 'Tag',
     underscored: true,
-    timestamps: false
+    timestamps: false,
+    defaultScope: {
+      attributes: ['id', 'title']
+    }
   });
   return tag;
 };

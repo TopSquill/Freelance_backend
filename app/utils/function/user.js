@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const { UnauthorizedError } = require("../errors/users");
 
 
 async function encrypt(password) {
@@ -58,8 +59,21 @@ exports.parseEmailToken = parseEmailToken;
 const jwt = require('jsonwebtoken');
 
 function getUser(req) {
-  const { user } = jwt.decode(req.headers[process.env.JWT_TOKEN_HEADER])
+  if (!req.headers[process.env.JWT_TOKEN_HEADER]) {
+    throw new UnauthorizedError('Unauthorized');
+  }
+  const { user, exp } = jwt.decode(req.headers[process.env.JWT_TOKEN_HEADER])
+
+  if (new Date() >= exp * 1000) {
+    throw new UnauthorizedError('Token Expired');
+  }
   return user;
 }
 
 exports.getUser = getUser;
+
+function getJWTToken(user) {
+  return jwt.sign({ user }, process.env.JWT_SECRET_KEY, { expiresIn: process.env.JWT_EXPIRY })
+}
+
+exports.getJWTToken = getJWTToken;

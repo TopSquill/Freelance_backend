@@ -12,7 +12,7 @@ function sendVerificationMail(recipientMail, emailOtp) {
   // read the HTML template file
   const htmlTemplate = fs.readFileSync(path.resolve(__dirname, './template.html'), 'utf-8');
 
-  const verificationLink = `${process.env.SERVER_HOST}/users/verify-email/${emailOtp}`
+  const verificationLink = `${process.env.FRONTEND_SERVER_HOST}?verify=${emailOtp}`
   // compile the HTML template with EJS
 
   const compiledTemplate = ejs.compile(htmlTemplate)({ verificationLink });

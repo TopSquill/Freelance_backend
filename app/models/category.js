@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+const { Tag } = require('.');
 
 module.exports = (sequelize, DataTypes) => {
   class Category extends Model {
@@ -21,6 +22,10 @@ module.exports = (sequelize, DataTypes) => {
   Category.init({
     title: {
       type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true
+      },
       unique: true
     }
   }, {

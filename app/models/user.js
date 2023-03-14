@@ -6,6 +6,7 @@ const { options } = require("../routes");
 const UserTypes = require("../utils/constants/UserTypes");
 const { encrypt, generateOTP, getTimestamp, checkIfEmailOtpValid } = require("../utils/function/user");
 const { Project } = require(".");
+const { AlreadyVerifyMailError } = require("../utils/errors/users");
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
@@ -29,14 +30,14 @@ module.exports = (sequelize, DataTypes) => {
 
     static async verifyUserEmail(userId, userToken) {
       const user = await User.scope('otpVerify').findByPk(userId);
-      if (user.isEmailVerified) throw new Error('Email already Verified')
+      if (user.isEmailVerified) throw new AlreadyVerifyMailError('Email already Verified')
 
       if (checkIfEmailOtpValid(user.emailOtp, userToken)) {
         await user.update({ isEmailVerified: true });
-        return true;
+        return user;
       }
 
-      return false;
+      throw new Error('Email verification not successful')
     }
 
     async verifyUserByMail() {
@@ -63,8 +64,8 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
         validate: {
-          notEmpty: true,
-          isEmail: true,
+          notEmpty: { msg: 'Email should not be blank' },
+          isEmail: { msg: 'Invalid email' },
         },
       },
       mobileNo:  {
@@ -107,7 +108,8 @@ module.exports = (sequelize, DataTypes) => {
         values: [UserTypes.CLIENT, UserTypes.FREELANCER, UserTypes.VENDOR],
         allowNull: false,
         validate: {
-          notEmpty: true,
+          notNull: { msg: 'User type cannot be empty' },
+          notEmpty: { msg: 'User type cannot be empty' },
           isIn: {
             msg: `User type must one of these (${Object.values(UserTypes).join(
               ", ",

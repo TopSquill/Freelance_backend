@@ -33,5 +33,16 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: false
   });
 
+  ProjectTag.bulkCreateRaw = async (projectIds, tagIds, options) => {
+    let values = ''
+     projectIds.forEach((projectId, projIdx) => {
+      tagIds.forEach((tagId, tagIdx) => {
+        values = values + `(${projectId}, ${tagId})
+        ${projectIds.length - 1 == projIdx && tagIds.length - 1 == tagIdx ? '' : ', '}`
+      })
+    })
+    await sequelize.query(`INSERT INTO project_tags (project_id, tag_id) values ${values} `, options)
+  }
+
   return ProjectTag;
 };

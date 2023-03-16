@@ -1,21 +1,44 @@
-const { Project, ProjectCategory, ProjectTag } = require("../models");
+const { Project, ProjectCategory, ProjectTag, sequelize, Sequelize } = require("../models");
 const UserTypes = require("../utils/constants/UserTypes");
 const { UnauthorizedError } = require("../utils/errors/users");
 const { showError } = require("../utils/function/common");
 const { getUserId, getUser } = require("../utils/function/user");
+const { Transaction } = require('sequelize');
 
 const ProjectController = {
   createProject: async (req, res) => {
     const { headline, duration, description, attachments, budget, budgetType, budgetCurrency, projectCategoryIds, projectTagIds = [] } = req.body
+    let newProject;
+
+
     try {
       const user = getUser(req);
-      const newProject = await Project.create({ headline, description, duration, attachments, budget, budgetType, budgetCurrency, postedByUserId: user.id });
 
-      await Promise.all([
-        ProjectCategory.bulkCreate(projectCategoryIds?.map(categoryId => ({ categoryId, projectId: newProject.id }))),
-        ProjectTag.bulkCreate(projectTagIds?.map(tagId => ({ tagId, projectId: newProject.id })))
-      ]).then((success) => {
-        console.log('asdasda--------------', success)
+      await sequelize.transaction(async (t) => {
+        newProject = await Project.create({ headline, description, duration, attachments, budget, budgetType, budgetCurrency, postedByUserId: user.id }, { transaction: t });
+
+        await Promise.all([
+          ProjectCategory.bulkCreateRaw([newProject.id], projectCategoryIds, {
+            transaction: t
+          }),
+          // ProjectCategory.bulkCreate(
+          //   projectCategoryIds?.map(categoryId => ({ categoryId, projectId: newProject.id })),
+          //   {
+          //     returning: true,
+          //     transaction: t,
+          //     omitNull: true
+          //   }
+          // ),
+          ProjectTag.bulkCreateRaw([newProject.id], projectTagIds, {
+            transaction: t,
+          })
+        ]).then((success) => {
+          console.log('success insert join table--------------', success)
+        }).catch(err => {
+          console.log('error in join table', err)
+          throw err;
+        })
+
       })
 
       return res.status(201).send({ message: 'created', project: newProject })
@@ -23,7 +46,6 @@ const ProjectController = {
       console.log('Create error', err.message);
       if (err instanceof UnauthorizedError) {
         return res.status(400).send({ message: showError(err) });
-
       }
       return res.status(400).send({ message: showError(err) });
     }

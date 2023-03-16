@@ -11,11 +11,17 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      ProjectCategory.belongsTo(models['Project'], { foreignKey: 'project_id', as: 'project' });
-      ProjectCategory.belongsTo(models['Category'], { foreignKey: 'category_id', as: 'category' });
+      // ProjectCategory.belongsTo(models['Project'], { foreignKey: 'project_id', as: 'project' });
+      // ProjectCategory.belongsTo(models['Category'], { foreignKey: 'category_id', as: 'category' });
     }
   }
   ProjectCategory.init({
+    id: {
+      type: DataTypes.BIGINT,
+      primaryKey: true,
+      autoIncrement: true,
+
+    },
     projectId: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -42,5 +48,15 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: false
   });
 
+  ProjectCategory.bulkCreateRaw = async (projectIds, categoryIds, options) => {
+    let values = ''
+     projectIds.forEach((projectId, projIdx) => {
+      categoryIds.forEach((categoryId, categoryIdx) => {
+        values = values + `(${projectId}, ${categoryId})
+        ${projectIds.length - 1 == projIdx && categoryIds.length - 1 == categoryIdx ? '' : ', '}`
+      })
+    })
+    await sequelize.query(`INSERT INTO project_categories (project_id, category_id) values ${values} `, options)
+  }
   return ProjectCategory;
 };

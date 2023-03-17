@@ -16,8 +16,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Project.belongsTo(models['User'], { as: 'postedBy', foreignKey: 'posted_by_user_id' })
-      Project.belongsToMany(models['Category'], { through: models['ProjectCategory'], as: 'category' });
-      Project.belongsToMany(models['Tag'], { through: models['ProjectTag'], as: 'keyword' });
+      Project.belongsToMany(models['Category'], { through: models['ProjectCategory'], as: 'categories', });
+      Project.belongsToMany(models['Tag'], { through: models['ProjectTag'], as: 'keywords', foreignKey: 'project_id' });
     }
   }
   Project.init({

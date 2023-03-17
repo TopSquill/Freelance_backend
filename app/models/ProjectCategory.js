@@ -20,7 +20,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BIGINT,
       primaryKey: true,
       autoIncrement: true,
-
     },
     projectId: {
       type: DataTypes.BIGINT,
@@ -50,8 +49,8 @@ module.exports = (sequelize, DataTypes) => {
 
   ProjectCategory.bulkCreateRaw = async (projectIds, categoryIds, options) => {
     let values = ''
-     projectIds.forEach((projectId, projIdx) => {
-      categoryIds.forEach((categoryId, categoryIdx) => {
+     projectIds?.forEach((projectId, projIdx) => {
+      categoryIds?.forEach((categoryId, categoryIdx) => {
         values = values + `(${projectId}, ${categoryId})
         ${projectIds.length - 1 == projIdx && categoryIds.length - 1 == categoryIdx ? '' : ', '}`
       })

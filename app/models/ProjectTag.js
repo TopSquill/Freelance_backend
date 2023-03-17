@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
     projectId: {
       type: DataTypes.BIGINT,
       allowNull: false,
+      
     },
     tagId: {
       type: DataTypes.BIGINT,
@@ -35,8 +36,8 @@ module.exports = (sequelize, DataTypes) => {
 
   ProjectTag.bulkCreateRaw = async (projectIds, tagIds, options) => {
     let values = ''
-     projectIds.forEach((projectId, projIdx) => {
-      tagIds.forEach((tagId, tagIdx) => {
+     projectIds?.forEach((projectId, projIdx) => {
+      tagIds?.forEach((tagId, tagIdx) => {
         values = values + `(${projectId}, ${tagId})
         ${projectIds.length - 1 == projIdx && tagIds.length - 1 == tagIdx ? '' : ', '}`
       })

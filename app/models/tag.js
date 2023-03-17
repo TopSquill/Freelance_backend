@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       this.belongsTo(models['Category'], { as: 'category' })
-      this.belongsToMany(models.Project, { through: models['ProjectTag'], as: 'TaggedProject' });
+      this.belongsToMany(models.Project, { through: models['ProjectTag'], as: 'TaggedProject', foreignKey: 'tag_id' });
     }
   }
   tag.init({

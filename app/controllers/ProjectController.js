@@ -6,24 +6,52 @@ const { getUserId, getUser } = require("../utils/function/user");
 const { Transaction, Association } = require('sequelize');
 
 const ProjectController = {
-  getProjects: async (req, res) => {
+  getPostedProjects: async (req, res) => {
     try {
       const user = getUser(req);
-      const projects = await user.getProjects();
 
-      return res.status(200).send({ projects });
+      if (user) {
+        const projects = await Project.findAll({ where: {
+            postedByUserId: user.id
+          } 
+        })
+        return res.status(200).send({ projects });
+      }
+
+
     } catch (err) {
       return res.status(400).send({ message: showError(err) });
     }
   },
+  // getTopProjects: async (req, res) => {
+  //   try {
+  //     const projects = await Project.findAll({ where: {
+
+  //       } 
+  //     })
+  //     return res.status(200).send({ projects });
+  //   } catch (err) {
+  //     return res.status(400).send({ message: showError(err) });
+  //   }
+  // },
   getProject: async (req, res) => {
     const { projectId } = req.params;
 
     try {
-      const project = await Project.findOne({ where: { id: projectId }, include: [{ model: Tag, as: 'keywords' }] });
+      const project = await Project.findOne({ 
+        where: { id: projectId }, 
+        include: [{ 
+          model: Tag, 
+          as: 'keywords',
+          through: {
+            attributes: []
+          }
+        }] 
+      });
 
       return res.status(200).send({ project });
     } catch (err) {
+      console.log('err ------', err);
       return res.status(400).send({ message: showError(err) });
     }
   },

@@ -64,6 +64,10 @@ function getUser(req) {
   }
   const { user, exp } = jwt.decode(req.headers[process.env.JWT_TOKEN_HEADER])
 
+  if (!user || !user.id) {
+    throw new UnauthorizedError('Unauthorized');
+  }
+
   if (new Date() >= exp * 1000) {
     throw new UnauthorizedError('Token Expired');
   }

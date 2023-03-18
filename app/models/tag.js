@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+const { ProjectTag } = require('.');
 
 module.exports = (sequelize, DataTypes) => {
   class tag extends Model {

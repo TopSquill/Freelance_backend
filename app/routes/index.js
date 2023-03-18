@@ -4,7 +4,6 @@ const projectRouter = require('./projects');
 const categoriesRoutes = require('./categories');
 const tagsRoutes = require('./tags');
 
-
 router.use('/users', userRouter);
 router.use('/projects', projectRouter);
 router.use('/categories', categoriesRoutes);

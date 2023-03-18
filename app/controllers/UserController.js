@@ -1,6 +1,6 @@
 const { User } = require("../models");
 const { default: UserTypes } = require("../utils/constants/UserTypes");
-const { parseEmailToken } = require("../utils/function/user");
+const { parseEmailToken, getUser } = require("../utils/function/user");
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -99,12 +99,8 @@ const UserController = {
 
       if (user.isEmailVerified) throw new Error('Email already verified');
 
-      return user.verifyUserByMail();
-    }).then(success => {
-      if (!success) {
-        return res.status(404).send({ message: 'User does not exist' });
-      }
-
+      user.verifyUserByMail();
+    }).then(() => {
       return res.status(200).send({ message: 'Mail sent successfully'});
     }).catch(err => {
       return res.status(400).send({ message: err.message })
@@ -120,9 +116,9 @@ const UserController = {
       });
 
       if (!user)
-        res.status(404).send({ message: 'User not found' })
+        return res.status(404).send({ message: 'User not found' })
     } catch(err) {
-      res.status(400).send({ message: err.message })
+      return res.status(400).send({ message: err.message })
     }
 
     return bcrypt.compare(password, user.password).then((success) => {
@@ -138,15 +134,19 @@ const UserController = {
       return res.status(400).send({ message: 'Email not verified' })
     });
   },
-  getAllProjects: async (req, res) => {
-    const { userId } = req.query;
+  updateProfile: async (req, res) => {
+    const { country, mobileNo, name } = req.body;
 
     try {
-      res.status(200).json({ user: await User.getAllProjects(userId) });
-    } catch (error) {
-      console.log(error);
+      const user = getUser(req);
+
+      const updatedUser = await user.update({ country, mobileNo, name }, { returning: true })
+
+      return res.status(200).send({ user: updatedUser });
+    } catch(err) {
+      return res.status(400).send({ message: err.message });
     }
-  },
+  }
 };
 
 module.exports = UserController;

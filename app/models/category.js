@@ -17,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
         as: 'Project'
       })
       this.hasMany(models['Tag'], { as: 'tags', foreignKey: 'category_id', onDelete: 'CASCADE' })
+      this.belongsToMany(models['FreelancerProfile'], { through: 'FreelancerCategory', as: 'freelancerProfiles', foreignKey: 'freelancer_id' })
     }
   }
   Category.init({

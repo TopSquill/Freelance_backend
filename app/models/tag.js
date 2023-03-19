@@ -2,7 +2,6 @@
 const {
   Model
 } = require('sequelize');
-const { ProjectTag } = require('.');
 
 module.exports = (sequelize, DataTypes) => {
   class tag extends Model {
@@ -15,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       this.belongsTo(models['Category'], { as: 'category' })
       this.belongsToMany(models.Project, { through: models['ProjectTag'], as: 'TaggedProject', foreignKey: 'tag_id' });
+      this.belongsToMany(models.FreelancerProfile, { through: models['FreelancerTag'], as: 'taggedFreelancerProfiles', foreignKey: 'tag_id' });
     }
   }
   tag.init({
@@ -39,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
     underscored: true,
     timestamps: false,
     defaultScope: {
-      attributes: ['id', 'title']
+      attributes: ['id', 'title'],
     }
   });
   return tag;

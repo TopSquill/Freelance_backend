@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
   class FreelancerProfile extends Model {
     /**
@@ -12,6 +13,8 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       this.belongsTo(models['User'], { foreignKey: 'user_id', as: 'userAccount' })
+      this.belongsToMany(models['Category'], { through: 'FreelancerCategory', foreignKey: 'category_id', as: 'categories' })
+      this.belongsToMany(models['Tag'], { through: 'FreelancerTag', foreignKey: 'tag_id', as: 'freelancerTags' })
     }
   }
   FreelancerProfile.init({

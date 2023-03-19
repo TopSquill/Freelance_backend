@@ -5,6 +5,9 @@ const { showError } = require("../utils/function/common");
 const { getUserId, getUser } = require("../utils/function/user");
 const { Transaction, Association } = require('sequelize');
 
+// const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
+
 const ProjectController = {
   getPostedProjects: async (req, res) => {
     try {
@@ -23,17 +26,29 @@ const ProjectController = {
       return res.status(400).send({ message: showError(err) });
     }
   },
-  // getTopProjects: async (req, res) => {
-  //   try {
-  //     const projects = await Project.findAll({ where: {
+  getAllProjects: async (req, res) => {
+    const { search } = req.query;
+    let filter;
+    if (req.query.filter) {
+      try {
+        filter = JSON.parse(req.query.filter);
+      } catch(err) {
+        return res.send(400).send({ message: 'invalid filter param'})
+      }
+    }
 
-  //       } 
-  //     })
-  //     return res.status(200).send({ projects });
-  //   } catch (err) {
-  //     return res.status(400).send({ message: showError(err) });
-  //   }
-  // },
+    const { tags, budgetType, budgetRange } = filter || { tags: [], budgetType: [], budgetRange: {} };
+    if (!Object.keys(budgetRange).every(b => budgetType?.includes(b))) {
+      return res.status(400).send({ message: 'budget range cannot be sent without budget type' });
+    }
+    // TODO: pagination has to be added
+    try {
+      const projects = await Project.getFilteredProject(search, tags, budgetType, budgetRange);
+      return res.status(200).send({ projects });
+    } catch (err) {
+      return res.status(400).send({ message: showError(err) });
+    }
+  },
   getProject: async (req, res) => {
     const { projectId } = req.params;
 

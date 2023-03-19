@@ -1,11 +1,15 @@
 'use strict';
 const {
-  Model
+  Model,
+  Op,
+  QueryTypes
 } = require('sequelize');
 
 const durationTypes = ['1_MONTH+', '2_MONTHS+', '3_MONTHS+', '6_MONTHS+']
 
 const budgetTypes = ['FIXED', 'HOURLY', 'MONTHLY'];
+
+const { Tag } = require('.');
 
 module.exports = (sequelize, DataTypes) => {
   class Project extends Model {
@@ -17,7 +21,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Project.belongsTo(models['User'], { as: 'postedBy', foreignKey: 'posted_by_user_id' })
       Project.belongsToMany(models['Category'], { through: models['ProjectCategory'], as: 'categories', });
-      Project.belongsToMany(models['Tag'], { through: models['ProjectTag'], as: 'keywords', foreignKey: 'project_id' });
+      Project.belongsToMany(models['Tag'], { through: models['ProjectTag'], as: 'keywords', foreignKey: 'project_id', scope: {
+
+        } 
+      });
     }
   }
   Project.init({
@@ -73,12 +80,70 @@ module.exports = (sequelize, DataTypes) => {
     name: 'Project',
     modelName: 'Project',
     underscored: true,
-    timestamps: true
+    timestamps: true,
   });
 
-  Project.beforeCreate(async (user, options) => {
-    user.dataValues.budgetCurrency = user.dataValues.budgetCurrency?.toUpperCase?.()
+  Project.beforeCreate(async (project, options) => {
+    project.dataValues.budgetCurrency = project.dataValues.budgetCurrency?.toUpperCase?.()
   })
 
+//   SELECT p.*, ARRAY_AGG(t.title) AS tags
+// FROM projects p
+// LEFT JOIN project_tags pt ON pt.project_id = p.id
+// INNER JOIN tags t on pt.tag_id=t.id
+// WHERE pt.tag_id = ANY('{1,3}'::INT[]) OR pt.tag_id IS NULL group by p.id;
+
+  Project.getFilteredProject = async (search, tags=null, budgetType=[], budgetRange=[]) => {
+    return sequelize.query(`
+      SELECT p.*, ARRAY_AGG(t.title) AS tags
+      FROM projects p
+      LEFT OUTER JOIN project_tags pt ON pt.project_id = p.id
+      LEFT OUTER JOIN tags t ON t.id = pt.tag_id
+      where 
+        (t.title like :search OR 
+        p.headline like :search OR 
+        p.description like :search) AND
+        (
+          cardinality(ARRAY[:budget_type]) = 0 OR
+          p.budget_type::text = ANY(ARRAY[:budget_type]) AND
+          CASE
+            WHEN 
+              p.budget_type::text = 'HOURLY'
+            THEN 
+              p.budget >= :min_hourly_price AND p.budget <= :max_hourly_price
+            WHEN 
+              p.budget_type::text = 'MONTHLY'
+            THEN
+            p.budget >= :min_monthly_price AND p.budget <= :max_monthly_price  
+            WHEN 
+              p.budget_type::text = 'FIXED'
+            THEN 
+              p.budget >= :min_fixed_price AND p.budget <= :max_fixed_price
+          END
+        ) AND (
+          :tags_filtered OR t.id IN (:tags)
+        ) GROUP BY p.id
+        order by updated_at desc
+      `, {
+      // HAVING ARRAY_AGG(t.title) && :tags
+      replacements: {
+        search: `%${search ?? ''}%`,
+        tags_filtered: !tags?.length,
+        tags: !!tags?.length ? tags : -1,
+        budget_type: !!budgetType.length ? budgetType : [],
+        min_hourly_price: budgetRange['HOURLY']?.[0] ?? 0,
+        max_hourly_price: budgetRange['HOURLY']?.[1] ?? Number.MAX_SAFE_INTEGER,
+        min_monthly_price: budgetRange['MONTHLY']?.[0] ?? 0,
+        max_monthly_price: budgetRange['MONTHLY']?.[1] ?? Number.MAX_SAFE_INTEGER,
+        min_fixed_price: budgetRange?.['FIXED']?.[0] ?? 0,
+        max_fixed_price: budgetRange?.['FIXED']?.[1] ?? Number.MAX_SAFE_INTEGER
+      },
+      type: QueryTypes.SELECT,
+      model: Project,
+      mapToModel: true
+    })
+  };
+
+  
   return Project;
 };

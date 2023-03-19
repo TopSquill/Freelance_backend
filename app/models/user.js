@@ -82,6 +82,7 @@ module.exports = (sequelize, DataTypes) => {
         validate: {
           notNull: true,
           notEmpty: true,
+          len: [6]
         },
       },
       isMobileVerified: {

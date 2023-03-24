@@ -138,7 +138,7 @@ const UserController = {
     const { country, mobileNo, name } = req.body;
 
     try {
-      const user = getUser(req);
+      const user = req.user;
 
       const updatedUser = await user.update({ country, mobileNo, name }, { returning: true })
 

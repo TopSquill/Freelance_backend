@@ -1,6 +1,6 @@
 'use strict';
 const {
-  Model
+  Model, QueryTypes
 } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
     userId: {
       type: DataTypes.BIGINT,
       allowNull: false,
+      unique: true,
       references: {
         model: 'User',
         key: 'id'
@@ -34,5 +35,27 @@ module.exports = (sequelize, DataTypes) => {
     name: 'FreelancerProfile',
     underscored: true,
   });
+
+  // will add country later
+  FreelancerProfile.getFilteredProfiles = async (search, tags=null) => {
+    const data = await sequelize.query(`SELECT u.*, ARRAY_AGG(t.title) AS tags
+      FROM users u
+      INNER JOIN freelancer_profiles f ON f.user_id=u.id
+      LEFT OUTER JOIN freelancer_tags ft ON ft.freelancer_id = f.id
+      LEFT OUTER JOIN tags t ON t.id = ft.tag_id
+      WHERE (
+
+      )`, {
+        replacements: {
+
+        },
+        type: QueryTypes.SELECT,
+        model: FreelancerProfile,
+        mapToModel: true
+      });
+
+      return data;
+  }
+
   return FreelancerProfile;
 };

@@ -1,9 +1,6 @@
 const { Project, ProjectCategory, ProjectTag, sequelize, Sequelize, User, Category, Tag } = require("../models");
-const UserTypes = require("../utils/constants/UserTypes");
 const { UnauthorizedError } = require("../utils/errors/users");
 const { showError } = require("../utils/function/common");
-const { getUserId, getUser } = require("../utils/function/user");
-const { Transaction, Association } = require('sequelize');
 
 // const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
@@ -11,7 +8,7 @@ const Op = Sequelize.Op;
 const ProjectController = {
   getPostedProjects: async (req, res) => {
     try {
-      const user = getUser(req);
+      const user = req.user;
 
       if (user) {
         const projects = await Project.findAll({ where: {
@@ -38,7 +35,7 @@ const ProjectController = {
     }
 
     const { tags, budgetType, budgetRange } = filter || { tags: [], budgetType: [], budgetRange: {} };
-    if (!Object.keys(budgetRange).every(b => budgetType?.includes(b))) {
+    if (budgetRange?.constructor?.name == 'Object' && !Object.keys(budgetRange).every(b => budgetType?.includes(b))) {
       return res.status(400).send({ message: 'budget range cannot be sent without budget type' });
     }
     // TODO: pagination has to be added
@@ -76,7 +73,7 @@ const ProjectController = {
 
 
     try {
-      const user = getUser(req);
+      const user = req.user;
 
       await sequelize.transaction(async (t) => {
         newProject = await Project.create({ headline, description, duration, attachments, budget, budgetType, budgetCurrency, postedByUserId: user.id }, { transaction: t });
@@ -85,14 +82,6 @@ const ProjectController = {
           ProjectCategory.bulkCreateRaw([newProject.id], projectCategoryIds, {
             transaction: t
           }),
-          // ProjectCategory.bulkCreate(
-          //   projectCategoryIds?.map(categoryId => ({ categoryId, projectId: newProject.id })),
-          //   {
-          //     returning: true,
-          //     transaction: t,
-          //     omitNull: true
-          //   }
-          // ),
           ProjectTag.bulkCreateRaw([newProject.id], projectTagIds, {
             transaction: t,
           })
@@ -125,10 +114,7 @@ const ProjectController = {
 
     try {
       await sequelize.transaction(async (t) => {
-        const user = getUser(req);
-        // if (user.userType !== UserTypes.CLIENT) {
-        //   return res.status(405).send({ message: 'User type not allowed' })
-        // }
+        const user = req.user;
 
         project = await Project.update({ headline, description, duration, attachments, budget, budgetType }, { where: { id: projectId }, returning: true });
         

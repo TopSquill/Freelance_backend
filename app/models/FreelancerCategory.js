@@ -17,14 +17,14 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   FreelancerCategory.init({
-    freelancer_id: {
+    freelancerId: {
       type: DataTypes.BIGINT,
       references: {
         model: 'freelancer_profiles',
         key: 'id'
       }
     },
-    catgegory_id: {
+    categoryId: {
       type: DataTypes.BIGINT,
       references: {
         model: 'categories',
@@ -35,7 +35,18 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'FreelancerCategory',
     name: 'FreelancerCategory',
-    underscored: true
+    underscored: true,
+    timestamps: false
   });
+
+  FreelancerCategory.bulkCreateRaw = async (freelancerId, categoryIds, options) => {
+    let values = '';
+    categoryIds?.forEach((categoryId, idx) => { 
+      values += `(${freelancerId}, ${categoryId})`;
+      values += `${categoryIds.length - 1 == idx ? '' : ', '}`
+    });
+
+    await sequelize.query(`INSERT INTO freelancer_categories (freelancer_id, category_id) values ${values} `, options)
+  }
   return FreelancerCategory;
 };

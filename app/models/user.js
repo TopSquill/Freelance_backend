@@ -21,7 +21,9 @@ module.exports = (sequelize, DataTypes) => {
         as: "projects",
         foreignKey: "posted_by_user_id",
       });
-      User.hasOne(models['FreelancerProfile'], { foreignKey: 'user_id', as: 'FreelancePortfolio'})
+      User.hasOne(models['FreelancerProfile'], { foreignKey: 'user_id', as: 'FreelancePortfolio'});
+      User.hasMany(models['Proposal'], { as: 'bids', foreignKey: 'user_id' })
+      User.hasMany(models['Job'], { as: 'userJobs', foreignKey: 'user_id' })
     }
 
     async checkPassword(password) {
@@ -105,7 +107,7 @@ module.exports = (sequelize, DataTypes) => {
         }
       },
       userType: {
-        type: DataTypes.ENUM,
+        type: DataTypes.STRING,
         values: [UserTypes.CLIENT, UserTypes.FREELANCER, UserTypes.VENDOR],
         allowNull: false,
         validate: {

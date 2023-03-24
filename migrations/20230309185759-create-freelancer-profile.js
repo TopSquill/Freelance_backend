@@ -12,6 +12,7 @@ module.exports = {
       user_id: {
         type: Sequelize.BIGINT,
         allowNull: false,
+        unique: true,
         references: {
           model: 'users',
           key: 'id'

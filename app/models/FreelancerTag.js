@@ -13,8 +13,8 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      FreelancerTag.belongsTo(models['FreelancerProfile'], { as: 'associatedFreelancerProfile' });
-      FreelancerTag.belongsTo(models['Tag'], { as: 'associatedTag' });
+      FreelancerTag.belongsTo(models['FreelancerProfile'], { model: FreelancerProfile, as: 'associatedFreelancer', foreignKey: 'freelancer_id' });
+      FreelancerTag.belongsTo(models['Tag'], { model: Tag, as: 'associatedTag', foreignKey: 'id' });
     }
   }
   FreelancerTag.init({
@@ -36,7 +36,19 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'FreelancerTag',
     name: 'FreelancerTag',
-    underscored: true
+    underscored: true,
+    timestamps: false
   });
+
+  FreelancerTag.bulkCreateRaw = async (freelancerId, tagIds, options) => {
+    let values = '';
+    tagIds?.forEach((tagId, idx) => { 
+      values += `(${freelancerId}, ${tagId})`;
+      values += `${tagIds.length - 1 == idx ? '' : ', '}`
+    });
+
+    await sequelize.query(`INSERT INTO freelancer_tags (freelancer_id, tag_id) values ${values} `, options)
+  }
+
   return FreelancerTag;
 };

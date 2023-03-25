@@ -55,7 +55,7 @@ const UserController = {
       const user = await User.verifyUserEmail(userId, verifyToken);
       const token = getJWTToken(user);
 
-      return res.status(200).send({ success, token, user });
+      return res.status(200).send({ token, user });
     } catch(err) {
       if (err instanceof AlreadyVerifyMailError) {
         return res.status(405).json({ message: err.message })
@@ -91,7 +91,7 @@ const UserController = {
   resendVerificationMail: async (req, res) => {
     const { email } = req.body;
 
-    return User.findOne({ where: { email }}).then(user => {
+    return User.findOne({ where: { email: email?.toLowerCase?.().trim?.() }}).then(user => {
 
       if (!user) {
         return res.status(404).send({ message: 'User not found'});
@@ -99,7 +99,7 @@ const UserController = {
 
       if (user.isEmailVerified) throw new Error('Email already verified');
 
-      user.verifyUserByMail();
+      return user.verifyUserByMail();
     }).then(() => {
       return res.status(200).send({ message: 'Mail sent successfully'});
     }).catch(err => {
@@ -138,11 +138,26 @@ const UserController = {
     const { country, mobileNo, name } = req.body;
 
     try {
-      const user = req.user;
+      const userId = req.user?.id;
 
-      const updatedUser = await user.update({ country, mobileNo, name }, { returning: true })
+      const [_, updatedUser] = await User.update({ country, mobileNo, name }, { where: { id: userId }, returning: true })
+      
+      delete updatedUser?.[0]?.dataValues?.password;
+      delete updatedUser?.[0]?.dataValues?.mobileOtp;
+      delete updatedUser?.[0]?.dataValues?.emailOtp;
 
-      return res.status(200).send({ user: updatedUser });
+      return res.status(200).send({ user: updatedUser?.[0] });
+    } catch(err) {
+      return res.status(400).send({ message: err.message });
+    }
+  },
+  getUserWithFreelanceProfile: async (req, res) => {
+
+    try {
+      const userId = req.user?.id;
+
+      const user = await User.findOne({ where: { id: userId }, include: { model: db.FreelancerProfile, as: 'FreelancePortfolio' } })
+      return res.status(200).send({ user });
     } catch(err) {
       return res.status(400).send({ message: err.message });
     }

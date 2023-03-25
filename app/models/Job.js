@@ -2,6 +2,9 @@
 const {
   Model
 } = require('sequelize');
+const { options } = require('../routes');
+const BudgetTypes = require('../utils/constants/BudgetTypes');
+const JobStatus = require('../utils/constants/JobStatus');
 module.exports = (sequelize, DataTypes) => {
   class Job extends Model {
     /**
@@ -38,7 +41,12 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING
     },
     amountType: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
+      validate: {
+        isIn: {
+          args: [BudgetTypes]
+        }
+      }
     },
     status: DataTypes.STRING
   }, {
@@ -50,6 +58,10 @@ module.exports = (sequelize, DataTypes) => {
       fields: ['status']
     }]
   });
+
+  Job.beforeCreate(async (job, options) => {
+    job.dataValues.status = JobStatus.PENDING
+  })
 
   return Job;
 };

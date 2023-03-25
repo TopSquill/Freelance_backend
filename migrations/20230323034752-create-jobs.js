@@ -31,17 +31,17 @@ module.exports = {
       amount_type: {
         type: Sequelize.STRING
       },
-      createdAt: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE
       },
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE
       },
     });
     await queryInterface.sequelize.query('CREATE INDEX STATUS_IDX ON jobs (status);')
-    await queryInterface.sequelize.query('CREATE UNIQUE INDEX idx_project_id_user_id ON jobs (project_id, user_id) where status!=\'REASSIGNED\';')
+    await queryInterface.sequelize.query('CREATE UNIQUE INDEX idx_project_id ON jobs (project_id) where status!=\'REASSIGNED\';')
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('jobs');

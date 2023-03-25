@@ -1,4 +1,4 @@
-const { Proposal } = require('../models');
+const { Proposal, Project } = require('../models');
 
 class ProposalsController {
     async create(req, res) {
@@ -6,6 +6,11 @@ class ProposalsController {
         const user = req.user;
 
         try {
+            const project = Project.findOne({ id: projectid });
+            if (!project.active) {
+                return res.status(400).send({ message: 'Project is not active for bidding' })
+            }
+
             const proposal = await Proposal.create({
                 userId: user.id,
                 projectid: projectid,

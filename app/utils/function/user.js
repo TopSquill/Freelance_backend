@@ -39,7 +39,11 @@ function checkIfEmailOtpValid(actualUserToken, currentToken) {
   const actualToken = userTokenSplit[0]
   const timestamp = userTokenSplit[1];
 
-  if (timestamp > Number(new Date()) && actualToken === currentToken) {
+  if (timestamp <= Number(new Date())) {
+    throw new Error('Email link expired');
+  }
+
+  if (actualToken === currentToken) {
     return true;
   }
 

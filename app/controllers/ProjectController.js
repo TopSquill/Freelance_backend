@@ -135,7 +135,7 @@ const ProjectController = {
     }
   },
   assignProject: async (req, res) => {
-    const { freelancerUserId, amount, amountCurrency, amountType, status } = req.body;
+    const { freelancerUserId, amount, amountCurrency, amountType } = req.body;
     const { projectId } = req.params;
 
     try {
@@ -152,18 +152,21 @@ const ProjectController = {
         }
       })
 
-      if (existingJob?.userId !== freelancerUserId) {
-        const job = await Job.create({ amount, amountCurrency, amountType, status, userId: freelancerUserId, projectId }).then(() => {
+      if (existingJob?.userId != freelancerUserId) {
+        await Job.create({ amount, amountCurrency, amountType, userId: freelancerUserId, projectId }).then(() => {
           return Project.update({ active: false }, { where: { id: projectId } })
         });
 
-        return res.status(200).send({ job });
+        return res.status(200).send({ message: 'Project assigned successfully' });
       } else {
         throw new Error('This project is already assigned to this user')
       }
 
     } catch (err) {
-      res.status(400).send({ message: err.message });
+      res.status(400).send({ message: 
+        err?.errors?.map?.(error => error?.message)?.join?.(', ') 
+        || err.message 
+      });
     }
   }
 }

@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
         as: "projects",
         foreignKey: "posted_by_user_id",
       });
-      User.hasOne(models['FreelancerProfile'], { foreignKey: 'user_id', as: 'FreelancePortfolio'});
+      User.hasOne(models['FreelancerProfile'], { foreignKey: 'user_id', as: 'freelancePortfolio'});
       User.hasMany(models['Proposal'], { as: 'bids', foreignKey: 'user_id' })
       User.hasMany(models['Job'], { as: 'userJobs', foreignKey: 'user_id' })
     }

@@ -156,7 +156,7 @@ const UserController = {
     try {
       const userId = req.user?.id;
 
-      const user = await User.findOne({ where: { id: userId }, include: { model: db.FreelancerProfile, as: 'FreelancePortfolio' } })
+      const user = await User.findOne({ where: { id: userId }, include: { model: db.FreelancerProfile, as: 'freelancePortfolio' } })
       return res.status(200).send({ user });
     } catch(err) {
       return res.status(400).send({ message: err.message });

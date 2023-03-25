@@ -1,4 +1,6 @@
-const { Project, ProjectCategory, ProjectTag, sequelize, Sequelize, User, Category, Tag } = require("../models");
+const { Project, ProjectCategory, ProjectTag, sequelize, Sequelize, User, Category, Tag, Job } = require("../models");
+const project = require("../models/project");
+const JobStatus = require("../utils/constants/JobStatus");
 const { UnauthorizedError } = require("../utils/errors/users");
 const { showError } = require("../utils/function/common");
 
@@ -129,6 +131,38 @@ const ProjectController = {
       res.status(200).send({ project })
     } catch (err) {
       console.log('Update error', err.message);
+      res.status(400).send({ message: err.message });
+    }
+  },
+  assignProject: async (req, res) => {
+    const { freelancerUserId, amount, amountCurrency, amountType, status } = req.body;
+    const { projectId } = req.params;
+
+    try {
+      const existingJob = await Job.findOne({ 
+        where: {
+          [Sequelize.Op.and]: [
+            { projectId },
+            { 
+              status: {
+                [Sequelize.Op.not]: JobStatus.REASSIGNED
+              }
+            }
+          ]
+        }
+      })
+
+      if (existingJob?.userId !== freelancerUserId) {
+        const job = await Job.create({ amount, amountCurrency, amountType, status, userId: freelancerUserId, projectId }).then(() => {
+          return Project.update({ active: false }, { where: { id: projectId } })
+        });
+
+        return res.status(200).send({ job });
+      } else {
+        throw new Error('This project is already assigned to this user')
+      }
+
+    } catch (err) {
       res.status(400).send({ message: err.message });
     }
   }

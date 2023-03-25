@@ -38,7 +38,7 @@ const UserController = {
       //     .json({ message: "User with this mobile already exists" });
       // }
 
-      await User.create({ name, email, password, userType }, { returning: false });
+      await User.create({ name, email, password, userType });
 
       return res.status(201).json({ success: true, message: 'Verification mail has been sent' });
     } catch (error) {

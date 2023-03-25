@@ -1,4 +1,7 @@
 'use strict';
+
+const { DataTypes } = require('sequelize');
+
 /** @type {import('sequelize-cli').Migration} */
 
 module.exports = {
@@ -19,6 +22,15 @@ module.exports = {
       status: {
         type: Sequelize.STRING
       },
+      amount: {
+        type: Sequelize.FLOAT
+      },
+      amount_currency: {
+        type: Sequelize.STRING
+      },
+      amount_type: {
+        type: Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -26,10 +38,10 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
-      }
+      },
     });
     await queryInterface.sequelize.query('CREATE INDEX STATUS_IDX ON jobs (status);')
-    await queryInterface.sequelize.query('CREATE UNIQUE INDEX idx_project_id ON jobs (project_id) where status!=\'REASSIGNED\';')
+    await queryInterface.sequelize.query('CREATE UNIQUE INDEX idx_project_id_user_id ON jobs (project_id, user_id) where status!=\'REASSIGNED\';')
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('jobs');

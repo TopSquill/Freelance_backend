@@ -73,12 +73,21 @@ module.exports = (sequelize, DataTypes) => {
         }
       }
     },
+    active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    }
   }, {
     sequelize,
     name: 'Project',
     modelName: 'Project',
     underscored: true,
     timestamps: true,
+    defaultScope: {
+      where: {
+        active: true
+      }
+    }
   });
 
   Project.beforeCreate(async (project, options) => {
@@ -93,11 +102,20 @@ module.exports = (sequelize, DataTypes) => {
 
   Project.getFilteredProject = async (search, tags=null, budgetType=[], budgetRange=[]) => {
     const data = await sequelize.query(`
-      SELECT p.*, ARRAY_AGG(t.title) AS tags
+      SELECT p.headline as headline, 
+      p.description as description,
+      p.budget as budget,
+      p.budget_type as budgetType,
+      p.budget_currency as budgetCurrency,
+      p.posted_by_user_id as postedById,
+      p.attachments as attachments,
+      p.duration as duration,
+      ARRAY_AGG(t.title) AS tags
       FROM projects p
       LEFT OUTER JOIN project_tags pt ON pt.project_id = p.id
       LEFT OUTER JOIN tags t ON t.id = pt.tag_id
-      where 
+      AND 
+        p.active AND
         (t.title like :search OR 
         p.headline like :search OR 
         p.description like :search) AND
@@ -123,7 +141,7 @@ module.exports = (sequelize, DataTypes) => {
         ) AND (
           p.id > :last_fetched_project_id
         ) GROUP BY p.id
-        order by updated_at desc
+        order by created_at desc
         limit :limit
       `, {
       // HAVING ARRAY_AGG(t.title) && :tags

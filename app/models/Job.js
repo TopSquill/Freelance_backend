@@ -31,6 +31,15 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id'
       },
     },
+    amount: {
+      type: DataTypes.FLOAT
+    },
+    amountCurrency: {
+      type: DataTypes.STRING
+    },
+    amountType: {
+      type: DataTypes.STRING
+    },
     status: DataTypes.STRING
   }, {
     sequelize,
@@ -41,10 +50,6 @@ module.exports = (sequelize, DataTypes) => {
       fields: ['status']
     }]
   });
-
-  Job.beforeCreate(async (job, options) => {
-    Job.findOne({ })
-  })
 
   return Job;
 };

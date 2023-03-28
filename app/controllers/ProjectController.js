@@ -4,8 +4,7 @@ const JobStatus = require("../utils/constants/JobStatus");
 const { UnauthorizedError } = require("../utils/errors/users");
 const { showError } = require("../utils/function/common");
 
-// const Sequelize = require('sequelize');
-const Op = Sequelize.Op;
+const { Op } = require('sequelize');
 
 const ProjectController = {
   getPostedProjects: async (req, res) => {
@@ -26,7 +25,7 @@ const ProjectController = {
     }
   },
   getAllProjects: async (req, res) => {
-    const { search } = req.query;
+    const { search, prev: lastFetchedProjectId } = req.query;
     let filter;
     if (req.query.filter) {
       try {
@@ -37,12 +36,13 @@ const ProjectController = {
     }
 
     const { tags, budgetType, budgetRange } = filter || { tags: [], budgetType: [], budgetRange: {} };
+
     if (budgetRange?.constructor?.name == 'Object' && !Object.keys(budgetRange).every(b => budgetType?.includes(b))) {
       return res.status(400).send({ message: 'budget range cannot be sent without budget type' });
     }
     // TODO: pagination has to be added
     try {
-      const projects = await Project.getFilteredProject(search, tags, budgetType, budgetRange);
+      const projects = await Project.getFilteredProject(search, lastFetchedProjectId, tags, budgetType, budgetRange);
       return res.status(200).send({ projects });
     } catch (err) {
       return res.status(400).send({ message: showError(err) });
@@ -60,9 +60,12 @@ const ProjectController = {
           through: {
             attributes: []
           }
+        }, {
+          model: Job,
+          as: 'jobs',
         }] 
       });
-
+      
       return res.status(200).send({ project });
     } catch (err) {
       console.log('err ------', err);
@@ -141,11 +144,11 @@ const ProjectController = {
     try {
       const existingJob = await Job.findOne({ 
         where: {
-          [Sequelize.Op.and]: [
+          [Op.and]: [
             { projectId },
             { 
               status: {
-                [Sequelize.Op.not]: JobStatus.REASSIGNED
+                [Op.not]: JobStatus.REASSIGNED
               }
             }
           ]

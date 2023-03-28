@@ -28,6 +28,20 @@ class FreelanceProfileController {
             return res.status(400).send({ message: err.message })
         }
     }
+
+    async getAllFreelancers(req, res) {
+        const { search, filters, lastFetched } = req.query;
+
+        const { tags } = JSON.parse(filters) || {};
+
+        try {
+            const freelancers = await FreelancerProfile.getFilteredProfiles(search, lastFetched, tags);
+
+            return res.status(200).send({ freelancers });
+        } catch(err) {
+            return res.status(400).send({ message: err.message });
+        }
+    }
 }
 
 module.exports = new FreelanceProfileController();

@@ -6,7 +6,7 @@ class ProposalsController {
         const user = req.user;
 
         try {
-            const project = Project.findOne({ id: projectid });
+            const project = await Project.findOne({ id: projectid });
             if (!project.active) {
                 return res.status(400).send({ message: 'Project is not active for bidding' })
             }

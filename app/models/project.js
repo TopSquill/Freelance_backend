@@ -1,12 +1,10 @@
 'use strict';
 const {
   Model,
-  Op,
   QueryTypes
 } = require('sequelize');
 
 
-const { Tag } = require('.');
 const BudgetTypes = require('../utils/constants/BudgetTypes');
 const DurationTypes = require('../utils/constants/DurationTypes');
 
@@ -76,6 +74,9 @@ module.exports = (sequelize, DataTypes) => {
     active: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
+    },
+    views: {
+      type: DataTypes.INTEGER,
     }
   }, {
     sequelize,
@@ -94,13 +95,13 @@ module.exports = (sequelize, DataTypes) => {
     project.dataValues.budgetCurrency = project.dataValues.budgetCurrency?.toUpperCase?.()
   })
 
-//   SELECT p.*, ARRAY_AGG(t.title) AS tags
-// FROM projects p
-// LEFT JOIN project_tags pt ON pt.project_id = p.id
-// INNER JOIN tags t on pt.tag_id=t.id
-// WHERE pt.tag_id = ANY('{1,3}'::INT[]) OR pt.tag_id IS NULL group by p.id;
+  //   SELECT p.*, ARRAY_AGG(t.title) AS tags
+  // FROM projects p
+  // LEFT JOIN project_tags pt ON pt.project_id = p.id
+  // INNER JOIN tags t on pt.tag_id=t.id
+  // WHERE pt.tag_id = ANY('{1,3}'::INT[]) OR pt.tag_id IS NULL group by p.id;
 
-  Project.getFilteredProject = async (search, tags=null, budgetType=[], budgetRange=[]) => {
+  Project.getFilteredProject = async (search, lastFetchedProjectId=0, tags = null, budgetType = [], budgetRange = []) => {
     const data = await sequelize.query(`
       SELECT p.headline as headline, 
       p.description as description,
@@ -156,7 +157,7 @@ module.exports = (sequelize, DataTypes) => {
         max_monthly_price: budgetRange?.['MONTHLY']?.[1] ?? Number.MAX_SAFE_INTEGER,
         min_fixed_price: budgetRange?.['FIXED']?.[0] ?? 0,
         max_fixed_price: budgetRange?.['FIXED']?.[1] ?? Number.MAX_SAFE_INTEGER,
-        last_fetched_project_id: 0,
+        last_fetched_project_id: lastFetchedProjectId,
         limit: 20
       },
       type: QueryTypes.SELECT,
@@ -167,6 +168,11 @@ module.exports = (sequelize, DataTypes) => {
     return data;
   };
 
-  
+  Project.increaseView = (projectId) => {
+    return sequelize.query('UPDATE projects set views=views+1 where id=:projectId', {
+      replacements: { projectId }
+    })
+  }
+
   return Project;
 };

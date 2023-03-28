@@ -3,8 +3,9 @@ const {
   Model
 } = require('sequelize');
 
+
 module.exports = (sequelize, DataTypes) => {
-  class tag extends Model {
+  class Tag extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -17,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsToMany(models.FreelancerProfile, { through: models['FreelancerTag'], as: 'taggedFreelancerProfiles', foreignKey: 'tag_id' });
     }
   }
-  tag.init({
+  Tag.init({
     title: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -31,6 +32,15 @@ module.exports = (sequelize, DataTypes) => {
         model: 'categories',
         key: 'id'
       }
+    },
+    freelancersCount: {
+      type: DataTypes.BIGINT
+    },
+    projectsCount: {
+      type: DataTypes.BIGINT
+    },
+    searches: {
+      type: DataTypes.BIGINT
     }
   }, {
     sequelize,
@@ -42,5 +52,18 @@ module.exports = (sequelize, DataTypes) => {
       attributes: ['id', 'title'],
     }
   });
-  return tag;
+
+
+  Tag.increaseFreelancerCount = (tagId) => {
+    return sequelize.query('UPDATE TAGS SET freelancers_count=freelancers_count+1 where id=:tagId', { replacements: { tagId } })
+  }
+
+  Tag.increaseProjectCount = (tagId) => {
+    return sequelize.query('UPDATE TAGS SET projects_count=projects_count+1 where id=:tagId', { replacements: { tagId } })
+  }
+
+  Tag.increaseSearchesCount = (tagId) => {
+    return sequelize.query('UPDATE TAGS SET searches=searches+1 where id=:tagId', { replacements: { tagId } })
+  }
+  return Tag;
 };

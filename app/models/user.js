@@ -1,11 +1,9 @@
 "use strict";
 const { Model } = require("sequelize");
 const sendVerificationMail = require("../mailer/VerifyOTPMailer");
-const { options } = require("../routes");
 
 const UserTypes = require("../utils/constants/UserTypes");
 const { encrypt, generateOTP, getTimestamp, checkIfEmailOtpValid } = require("../utils/function/user");
-const { Project } = require(".");
 const { AlreadyVerifyMailError } = require("../utils/errors/users");
 
 module.exports = (sequelize, DataTypes) => {
@@ -16,7 +14,6 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      console.log('models --------------', models);
       User.hasMany(models.Project, {
         as: "projects",
         foreignKey: "posted_by_user_id",

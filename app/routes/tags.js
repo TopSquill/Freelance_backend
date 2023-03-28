@@ -9,5 +9,6 @@ const UserTypes = require('../utils/constants/UserTypes');
 router.post('/', authMiddleware([UserTypes.CLIENT, UserTypes.FREELANCER, UserTypes.VENDOR]), TagController.create);
 router.put('/:tagId', authMiddleware([UserTypes.CLIENT, UserTypes.FREELANCER, UserTypes.VENDOR]), TagController.update);
 router.delete('/:tagId', authMiddleware([UserTypes.CLIENT, UserTypes.FREELANCER, UserTypes.VENDOR]), TagController.delete);
+router.put('/search/:tagId', TagController.incrementSearchCount);
 
 module.exports = router;
